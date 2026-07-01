@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Rate bekannte und weniger bekannte Bibelstellen aus der Schlachter 2000 Übersetzung. Wähle Buch und Kapitel und teste dein Bibelwissen." />
+  <meta name="theme-color" content="#0b1622" />
+
+  <!-- PWA & Apple -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Bibelstellen" />
+  <link rel="apple-touch-icon" href="Bibelstellen.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <title>Bibelstellen Quiz – Schlachter 2000</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── Header ───────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-left">
+      <img src="Bibelstellen.png" alt="Bibelstellen Logo" class="app-logo" />
+      <span class="app-title">Bibelstellen</span>
+    </div>
+    <div class="header-right">
+      <div class="score-display">
+        <span class="score-label">Punkte</span>
+        <span class="score-value" id="score-value">0</span>
+      </div>
+      <div class="streak-badge">
+        <span class="streak-flame">🔥</span>
+        <span id="streak-count">0</span>
+      </div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Einstellungen öffnen">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Start Screen ──────────────────────────────── -->
+  <main class="main-content">
+    <section id="start-screen" class="screen active" style="display:flex;">
+      <img src="Bibelstellen.png" alt="Bibelstellen Icon" class="start-hero-icon" />
+
+      <h1 class="start-title">
+        Kennst du die<br /><span>Bibelstellen?</span>
+      </h1>
+
+      <p class="start-subtitle">
+        100 Verse aus der Schlachter 2000 · Rate Buch und Kapitel · Sammle Punkte
+      </p>
+
+      <div class="start-stats">
+        <div class="stat-item">
+          <span class="stat-number">100</span>
+          <span class="stat-label">Verse</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="start-highscore">0</span>
+          <span class="stat-label">Highscore</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">∞</span>
+          <span class="stat-label">Runden</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="start-btn">Spielen</button>
+    </section>
+
+    <!-- ── Game Screen ───────────────────────────────── -->
+    <section id="game-screen" class="screen" style="display:none;">
+
+      <!-- Vers-Karte -->
+      <div class="verse-card">
+        <div class="verse-progress">
+          <span class="verse-num" id="verse-num">Vers 1</span>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+          </div>
+        </div>
+        <p class="verse-text" id="verse-text"></p>
+      </div>
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step active" id="step-book"><span>1</span> Buch</div>
+        <div class="step-divider"></div>
+        <div class="step inactive" id="step-chapter"><span>2</span> Kapitel</div>
+      </div>
+
+      <!-- Buchauswahl -->
+      <div id="book-section">
+        <p class="section-title">Wähle das Bibelbuch</p>
+        <div id="book-grid"></div>
+      </div>
+
+      <!-- Kapitelauswahl -->
+      <div id="chapter-section">
+        <p class="section-title">Wähle das Kapitel</p>
+        <div class="chapter-grid" id="chapter-grid"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ── Swipe Edge Indicator ──────────────────────── -->
+  <div class="swipe-edge"></div>
+
+  <!-- ── Result Overlay ───────────────────────────── -->
+  <div class="result-overlay" id="result-overlay" role="dialog" aria-modal="true" aria-label="Ergebnis">
+    <div class="result-card">
+      <span class="result-icon" id="result-icon">🎉</span>
+      <h2 class="result-title correct" id="result-title">Richtig!</h2>
+      <p class="result-reference" id="result-ref"></p>
+      <div class="points-display">
+        <span class="points-badge" id="points-badge">+100</span>
+        <span class="points-label">Punkte</span>
+      </div>
+      <button class="btn-next" id="next-btn">Nächster Vers →</button>
+    </div>
+  </div>
+
+  <!-- ── Settings Panel Backdrop ──────────────────── -->
+  <div class="panel-backdrop" id="panel-backdrop"></div>
+
+  <!-- ── Settings Panel ───────────────────────────── -->
+  <aside class="settings-panel" id="settings-panel" aria-label="Einstellungen">
+    <div class="panel-header">
+      <h2 class="panel-title">Einstellungen</h2>
+      <button class="panel-close" id="panel-close" aria-label="Schließen">✕</button>
+    </div>
+
+    <div class="panel-body">
+
+      <!-- Highscore -->
+      <div class="setting-group">
+        <span class="setting-label">Highscore</span>
+        <div class="highscore-card">
+          <span class="highscore-value" id="panel-highscore">0</span>
+          <span class="highscore-label">Dein persönlicher Rekord</span>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- Filter -->
+      <div class="setting-group">
+        <span class="setting-label">Bibelbereich</span>
+        <div class="filter-options">
+
+          <button class="filter-btn active" data-filter="all">
+            <span class="filter-dot"></span>
+            Alle Verse (NT + AT)
+          </button>
+          <button class="filter-btn" data-filter="nt">
+            <span class="filter-dot"></span>
+            Nur Neues Testament
+          </button>
+          <button class="filter-btn" data-filter="at">
+            <span class="filter-dot"></span>
+            Nur Altes Testament
+          </button>
+
+          <div class="panel-divider" style="margin: 4px 0;"></div>
+
+          <button class="filter-btn" data-filter="evangelium">
+            <span class="filter-dot"></span>
+            Nur Evangelien
+          </button>
+          <button class="filter-btn" data-filter="brief">
+            <span class="filter-dot"></span>
+            Nur Briefe &amp; Apg
+          </button>
+          <button class="filter-btn" data-filter="apokalypse">
+            <span class="filter-dot"></span>
+            Nur Offenbarung
+          </button>
+          <button class="filter-btn" data-filter="poesie">
+            <span class="filter-dot"></span>
+            Nur Psalmen &amp; Poesie
+          </button>
+          <button class="filter-btn" data-filter="propheten">
+            <span class="filter-dot"></span>
+            Nur Propheten
+          </button>
+
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- Reset -->
+      <div class="setting-group">
+        <span class="setting-label">Fortschritt</span>
+        <button class="btn-reset" id="reset-btn">Fortschritt zurücksetzen</button>
+      </div>
+
+    </div>
+  </aside>
+
+</div><!-- /#app -->
+
+<!-- Scripts -->
+<script src="verses.js"></script>
+<script src="app.js"></script>
+<script>
+  // Service Worker registrieren
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
