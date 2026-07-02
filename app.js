@@ -204,16 +204,19 @@
     if (bookCorrect) points += 50;
     if (chapCorrect) points += 50;
 
-    const correct = bookCorrect && chapCorrect;
-
-    if (correct) {
+    if (bookCorrect) {
       state.score += points;
-      state.streak++;
       if (state.score > state.highscore) {
         state.highscore = state.score;
         saveData();
       }
-      document.querySelector('.verse-card').classList.add('correct');
+      if (chapCorrect) {
+        state.streak++;
+        document.querySelector('.verse-card').classList.add('correct');
+      } else {
+        state.streak = 0;
+        document.querySelector('.verse-card').classList.add('wrong');
+      }
     } else {
       state.streak = 0;
       document.querySelector('.verse-card').classList.add('wrong');

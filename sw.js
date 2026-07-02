@@ -1,4 +1,4 @@
-const CACHE = 'bibelstellen-v3';
+const CACHE = 'bibelstellen-v4';
 const ASSETS = [
   './',
   './index.html',
