@@ -1072,12 +1072,13 @@ const VERSES = [
   }
 ];
 
-// Alle einzigartigen Bücher mit Infos
+// Alle einzigartigen Bücher mit Infos (für Abwärtskompatibilität)
 const BOOKS_NT = [...new Set(VERSES.filter(v => v.testament === "NT").map(v => v.book))];
 const BOOKS_AT = [...new Set(VERSES.filter(v => v.testament === "AT").map(v => v.book))];
 
-// Kapitelanzahl je Buch (für Kapitel-Buttons)
+// Kapitelanzahl je Buch für alle 66 Bücher der Bibel
 const CHAPTER_COUNT = {
+  // NT
   "Matthäus": 28, "Markus": 16, "Lukas": 24, "Johannes": 21,
   "Apostelgeschichte": 28, "Römer": 16, "1. Korinther": 16,
   "2. Korinther": 13, "Galater": 6, "Epheser": 6, "Philipper": 4,
@@ -1089,8 +1090,10 @@ const CHAPTER_COUNT = {
   // AT
   "1. Mose": 50, "2. Mose": 40, "3. Mose": 27, "4. Mose": 36, "5. Mose": 34,
   "Josua": 24, "Richter": 21, "Ruth": 4, "1. Samuel": 31, "2. Samuel": 24,
-  "1. Könige": 22, "2. Könige": 25, "Esra": 10, "Nehemia": 13,
-  "Hiob": 42, "Psalmen": 150, "Sprüche": 31, "Kohelet": 12,
-  "Jesaja": 66, "Jeremia": 52, "Klagelieder": 5,
-  "Micha": 7, "Habakuk": 3, "Sacharja": 14, "Maleachi": 4
+  "1. Könige": 22, "2. Könige": 25, "1. Chronik": 29, "2. Chronik": 36,
+  "Esra": 10, "Nehemia": 13, "Esther": 10, "Hiob": 42, "Psalmen": 150,
+  "Sprüche": 31, "Kohelet": 12, "Hohelied": 8, "Jesaja": 66, "Jeremia": 52,
+  "Klagelieder": 5, "Hesekiel": 48, "Daniel": 12, "Hosea": 14, "Joel": 4,
+  "Amos": 9, "Obadja": 1, "Jona": 4, "Micha": 7, "Nahum": 3, "Habakuk": 3,
+  "Zephanja": 3, "Haggai": 2, "Sacharja": 14, "Maleachi": 4
 };

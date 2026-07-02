@@ -18,6 +18,7 @@
     filter: 'all',   // 'all' | 'nt' | 'at' | 'evangelium' | 'brief' | 'apokalypse' | 'poesie' | 'propheten'
     phase: 'start',  // 'start' | 'book' | 'chapter' | 'result'
     verseCount: 0,
+    quizLength: '10', // '10' | '20' | '50' | 'all'
   };
 
   // ── Load Saved Data ─────────────────────────────────
@@ -98,16 +99,30 @@
     return verse;
   }
 
+  const ALL_NT_BOOKS = [
+    "Matthäus", "Markus", "Lukas", "Johannes", "Apostelgeschichte", "Römer",
+    "1. Korinther", "2. Korinther", "Galater", "Epheser", "Philipper", "Kolosser",
+    "1. Thessalonicher", "2. Thessalonicher", "1. Timotheus", "2. Timotheus",
+    "Titus", "Philemon", "Hebräer", "Jakobus", "1. Petrus", "2. Petrus",
+    "1. Johannes", "2. Johannes", "3. Johannes", "Judas", "Offenbarung"
+  ];
+
+  const ALL_AT_BOOKS = [
+    "1. Mose", "2. Mose", "3. Mose", "4. Mose", "5. Mose",
+    "Josua", "Richter", "Ruth", "1. Samuel", "2. Samuel", "1. Könige", "2. Könige",
+    "1. Chronik", "2. Chronik", "Esra", "Nehemia", "Esther",
+    "Hiob", "Psalmen", "Sprüche", "Kohelet", "Hohelied",
+    "Jesaja", "Jeremia", "Klagelieder", "Hesekiel", "Daniel",
+    "Hosea", "Joel", "Amos", "Obadja", "Jona", "Micha", "Nahum", "Habakuk", "Zephanja",
+    "Haggai", "Sacharja", "Maleachi"
+  ];
+
   // ── Render Book Grid ────────────────────────────────
   function renderBookGrid() {
     bookGrid.innerHTML = '';
 
     const pool = getFilteredVerses();
     const availableBooks = [...new Set(pool.map(v => v.book))];
-
-    const allBooks = [...new Set(VERSES.map(v => v.book))];
-    const ntBooks  = [...new Set(VERSES.filter(v => v.testament === 'NT').map(v => v.book))];
-    const atBooks  = [...new Set(VERSES.filter(v => v.testament === 'AT').map(v => v.book))];
 
     function renderGroup(label, books) {
       if (books.length === 0) return;
@@ -131,8 +146,8 @@
       bookGrid.appendChild(groupEl);
     }
 
-    renderGroup('Neues Testament', ntBooks);
-    renderGroup('Altes Testament', atBooks);
+    renderGroup('Neues Testament', ALL_NT_BOOKS);
+    renderGroup('Altes Testament', ALL_AT_BOOKS);
   }
 
   // ── Select Book ─────────────────────────────────────
@@ -233,8 +248,38 @@
     resultOverlay.classList.add('show');
   }
 
-  // ── Next Verse ───────────────────────────────────────
+  // ── Next Verse / End Game ────────────────────────────
+  function showEndGameSummary() {
+    resultIcon.textContent  = '🏆';
+    resultTitle.textContent = 'Spiel beendet!';
+    resultTitle.className   = 'result-title correct';
+
+    const pool = getFilteredVerses();
+    const limit = state.quizLength === 'all' ? pool.length : Math.min(parseInt(state.quizLength), pool.length);
+    const maxPossiblePoints = limit * 100;
+
+    resultRef.innerHTML = `Du hast <strong>${state.score}</strong> von <strong>${maxPossiblePoints}</strong> Punkten erreicht!`;
+    pointsBadge.textContent = `${Math.round((state.score / (maxPossiblePoints || 1)) * 100)}% Richtig`;
+
+    const nextBtn = $('next-btn');
+    nextBtn.textContent = 'Zum Hauptmenü';
+    state.phase = 'end';
+    resultOverlay.classList.add('show');
+  }
+
   function nextVerse() {
+    if (state.phase === 'end') {
+      resultOverlay.classList.remove('show');
+      gameScreen.classList.remove('active');
+      gameScreen.style.display = 'none';
+      startScreen.style.display = 'flex';
+      startScreen.classList.add('active');
+      $('next-btn').textContent = 'Nächster Vers →';
+      state.phase = 'start';
+      updateScoreDisplay();
+      return;
+    }
+
     resultOverlay.classList.remove('show');
     document.querySelector('.verse-card').classList.remove('correct', 'wrong');
     chapterSection.classList.remove('active');
@@ -242,6 +287,14 @@
     state.selectedBook    = null;
     state.selectedChapter = null;
     state.answered        = false;
+
+    // Check if game is over
+    const pool = getFilteredVerses();
+    const limit = state.quizLength === 'all' ? pool.length : Math.min(parseInt(state.quizLength), pool.length);
+    if (state.verseCount >= limit) {
+      showEndGameSummary();
+      return;
+    }
 
     stepBook.className    = 'step active';
     stepBook.innerHTML    = `<span>1</span> Buch`;
@@ -258,11 +311,13 @@
     state.verseCount++;
     state.currentVerse = pickVerse();
     verseText.textContent = state.currentVerse.text;
-    verseNumEl.textContent = `Vers ${state.verseCount}`;
 
-    const total = Math.min(state.usedIds.length, getFilteredVerses().length);
-    const pct   = (state.usedIds.length / (getFilteredVerses().length || 100)) * 100;
-    progressFill.style.width = Math.min(pct, 100) + '%';
+    const pool = getFilteredVerses();
+    const limit = state.quizLength === 'all' ? pool.length : Math.min(parseInt(state.quizLength), pool.length);
+    verseNumEl.textContent = `Vers ${state.verseCount} / ${limit}`;
+
+    const pct = ((state.verseCount - 1) / (limit || 1)) * 100;
+    progressFill.style.width = pct + '%';
 
     // Fade in animation
     verseText.style.animation = 'none';
@@ -287,6 +342,8 @@
     gameScreen.classList.add('active');
     state.usedIds = [];
     state.verseCount = 0;
+    state.score = 0;
+    state.streak = 0;
 
     loadVerse();
     renderBookGrid();
@@ -345,6 +402,15 @@
 
   // ── Event Listeners ──────────────────────────────────
   $('start-btn').addEventListener('click', startGame);
+
+  // Rundenlänge Buttons
+  document.querySelectorAll('.length-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.length-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.quizLength = btn.dataset.length;
+    });
+  });
 
   $('hamburger-btn').addEventListener('click', openPanel);
   $('panel-close').addEventListener('click', closePanel);
