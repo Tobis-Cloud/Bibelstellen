@@ -403,12 +403,19 @@
   // ── Event Listeners ──────────────────────────────────
   $('start-btn').addEventListener('click', startGame);
 
-  // Rundenlänge Buttons
+  $('panel-start-btn').addEventListener('click', () => {
+    closePanel();
+    startGame();
+  });
+
+  // Rundenlänge Buttons (synchronisiert Startseite und Einstellungen)
   document.querySelectorAll('.length-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.length-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.quizLength = btn.dataset.length;
+      const len = btn.dataset.length;
+      state.quizLength = len;
+      document.querySelectorAll('.length-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.length === len);
+      });
     });
   });
 
